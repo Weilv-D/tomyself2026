@@ -1,0 +1,70 @@
+/* ───────────────────────────────────────────────
+   tokens.css — 设计令牌
+   黑白严肃报纸 · 衬线优先
+   ─────────────────────────────────────────────── */
+
+:root {
+  /* ── 色板 ── */
+  --ink: #0a0a0a; /* 主墨色 */
+  --ink-soft: #1c1b19; /* 略柔墨色 */
+  --paper: #f5f3ee; /* 纸张底色（微米灰） */
+  --paper-warm: #efece4; /* 暖纸色（分区） */
+  --paper-deep: #e8e4d8; /* 深纸色（边带） */
+
+  --gray-90: #2a2926;
+  --gray-70: #56534d;
+  --gray-50: #8a867d;
+  --gray-30: #b8b4a9;
+  --gray-15: #d8d4c8;
+  --rule: #1c1b19; /* 分隔线色 */
+
+  --vermilion: #8b1a1a; /* 朱砂印章色，仅极少强调 */
+  --vermilion-soft: #a83232;
+
+  /* ── 字体族（衬线分层） ── */
+  --font-display-cn: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-body-cn: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-display-en: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
+  --font-quote-en: 'EB Garamond', 'Noto Serif SC', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-accent: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+
+  /* ── 字号（模块化比例 ≈ 1.25） ── */
+  --fs-mega: 3.6rem; /* 报头刊名 */
+  --fs-xxl: 2.2rem;
+  --fs-xl: 1.7rem;
+  --fs-lg: 1.3rem;
+  --fs-md: 1.05rem; /* 正文 */
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.72rem; /* 题注/标签 */
+
+  /* ── 行高 ── */
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-body: 1.7;
+
+  /* ── 间距（基线 8px） ── */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+
+  /* ── 排版宽度 ── */
+  --measure: 720px; /* 正文行宽 */
+  --sheet: 1080px; /* 页面版心 */
+
+  /* ── 字距 ── */
+  --tracked: 0.18em; /* 全大写小标签 */
+  --tracked-wide: 0.32em; /* 报头副刊名 */
+
+  /* ── 线 ── */
+  --rule-1: 1px;
+  --rule-2: 3px;
+  --rule-double: 5px; /* 双线高度 */
+
+  --radius: 2px;
+}
