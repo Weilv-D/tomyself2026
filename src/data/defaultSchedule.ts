@@ -147,5 +147,6 @@ export const DEFAULT_SCHEDULE: ScheduleBlock[] = [
 
 export const DEFAULT_META = {
   startDate: '2026-06-28',
-  examDate: '2026-12-26',
+  // 2027 考研初试：2026 年 12 月 19-20 日，取首日
+  examDate: '2026-12-19',
 }
