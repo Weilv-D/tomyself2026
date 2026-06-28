@@ -8,7 +8,7 @@ interface SubjectBarsProps {
 export function SubjectBars({ stats }: SubjectBarsProps) {
   if (stats.length === 0) {
     return (
-      <p className="subject-empty">尚无学习记录。完成一次打卡，此处将现各科目时长。</p>
+      <p className="subject-empty">还没有学习记录。</p>
     )
   }
   const max = Math.max(...stats.map((s) => s.minutes), 1)

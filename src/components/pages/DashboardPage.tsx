@@ -49,8 +49,7 @@ export function DashboardPage({ app }: DashboardPageProps) {
       <SectionTitle roman="II" title="数据档案" sub="The Ledger" />
 
       <p className="deck">
-        凡走过必留痕。此处记录每一日的时间去向——哪些科目占了你的清晨，哪些
-        悄然偷走午后，又有哪些计划从未兑现。数据从不撒谎，它只是等待被阅读。
+        每天的时间花在了哪里，看图比看记录直接。
       </p>
 
       {/* 周期切换 */}

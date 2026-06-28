@@ -72,16 +72,14 @@ export function SettingsPage({
       <SectionTitle roman="IV" title="同步配置" sub="The Wire" />
 
       <p className="deck">
-        数据存于 GitHub 仓库的 <code className="mono">data/app.json</code>。填写下方的
-        令牌与仓库信息，即可在多设备间同步打卡记录。同步采用乐观锁与日期级合并，
-        冲突时保留两份备注，不会丢失手记。
+        打卡数据存在仓库的 <code className="mono">data/app.json</code> 里。填好令牌和仓库信息，
+        就能在多台设备间同步。
       </p>
 
       <div className="warning">
-        <strong>关于安全。</strong> Personal Access Token 仅保存在你当前浏览器的
-        localStorage 中，不会上传至任何第三方服务器。但 localStorage 对页面脚本可见，
-        若他人获得该令牌，可读写你授权范围内的仓库。建议使用 Fine-grained Token，
-        仅授权本仓库的 Contents 读写权限，并定期更换。
+        <strong>关于安全。</strong> 令牌只存在你这个浏览器里，不会发到别处。
+        但 localStorage 对页面脚本可见，一旦泄露别人就能读写你授权的仓库。所以建议用
+        Fine-grained Token，只给本仓库的 Contents 读写权限，用完可以换。
       </div>
 
       <div className="settings-form">

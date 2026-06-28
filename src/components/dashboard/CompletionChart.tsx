@@ -14,7 +14,7 @@ const PAD_B = 36
 
 export function CompletionChart({ points }: CompletionChartProps) {
   if (points.length === 0) {
-    return <p className="subject-empty">暂无数据。</p>
+    return <p className="subject-empty">还没有数据。</p>
   }
 
   const innerW = W - PAD_L - PAD_R

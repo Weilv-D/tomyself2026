@@ -94,7 +94,6 @@ function AppInner() {
       </main>
 
       <footer className="footer">
-        Printed daily, by yourself, for yourself. &nbsp;·&nbsp;
         考研日课 · {new Date().getFullYear()}
       </footer>
     </div>

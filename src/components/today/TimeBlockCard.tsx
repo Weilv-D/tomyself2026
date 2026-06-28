@@ -76,7 +76,7 @@ export function TimeBlockCard({
           <div className="block-note">
             <textarea
               value={check.note ?? ''}
-              placeholder="今日手记：哪里顺、哪里卡，便于改进计划……"
+              placeholder="备注：今天这个时段的情况……"
               onChange={(e) => onNote(e.target.value)}
             />
           </div>

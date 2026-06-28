@@ -93,8 +93,7 @@ export function SchedulePage({ app }: SchedulePageProps) {
       <SectionTitle roman="III" title="作息方略" sub="The Regimen" />
 
       <p className="deck">
-        好的计划像一张精确的航海图，但海图不会替你掌舵。此处可编辑每日时间块，
-        或整体导入新的作息方案。默认计划已依据超日节律与生物钟排布，可随时替换。
+        时间块可在此增删改，也可整体导入。默认这套按生物钟排，不喜欢就换掉。
       </p>
 
       <div className="schedule-tools">
