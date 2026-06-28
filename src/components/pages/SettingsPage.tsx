@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { AppDataApi } from '../../hooks/useAppData'
 import type { SyncResult } from '../../hooks/useGitHubSync'
 import { SectionTitle } from '../ui/SectionTitle'
 import { Divider } from '../ui/Divider'
@@ -7,7 +6,6 @@ import type { GitHubConfig } from '../../lib/storage'
 import { verifyToken } from '../../lib/github'
 
 interface SettingsPageProps {
-  app: AppDataApi
   cfg: GitHubConfig
   onCfgChange: (cfg: GitHubConfig) => void
   onPull: () => Promise<SyncResult>
@@ -61,7 +59,14 @@ export function SettingsPage({
       const r = await verifyToken(draft)
       setVerifyMsg(
         r.ok
-          ? { ok: true, text: `验证通过 · 账号 ${r.login}` }
+          ? {
+              ok: true,
+              text:
+                `验证通过 · 账号 ${r.login}` +
+                (r.canWrite === false
+                  ? '（只读：token 缺少 Contents 写权限，推送会失败）'
+                  : ''),
+            }
           : { ok: false, text: r.message ?? '验证失败' },
       )
     } catch (e) {

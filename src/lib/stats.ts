@@ -222,24 +222,29 @@ export interface TimelineSeg {
 
 export function dayTimeline(data: AppData, date: string): TimelineSeg[] {
   const rec = getDayRecord(data, date)
-  return data.schedule
-    .map((b) => {
-      let s = toMin(b.start)
-      let e = toMin(b.end)
-      if (e <= s) e += 1440
-      // 睡眠段（23:00→07:30）拆成两部分以正确显示在时间轴
-      // 这里统一保留为跨段，渲染时按需处理
-      return {
-        blockId: b.id,
-        title: b.title,
-        category: b.category,
-        startMin: s,
-        endMin: e,
-        done: !!rec?.blocks[b.id]?.done,
-        weight: CATEGORY_WEIGHT[b.category],
-      }
-    })
-    .sort((a, b) => a.startMin - b.startMin)
+  const done = (b: ScheduleBlock) => !!rec?.blocks[b.id]?.done
+  const segOf = (b: ScheduleBlock, s: number, e: number): TimelineSeg => ({
+    blockId: b.id,
+    title: b.title,
+    category: b.category,
+    startMin: s,
+    endMin: e,
+    done: done(b),
+    weight: CATEGORY_WEIGHT[b.category],
+  })
+  const out: TimelineSeg[] = []
+  for (const b of data.schedule) {
+    let s = toMin(b.start)
+    let e = toMin(b.end)
+    if (e <= s) {
+      // 跨午夜块（如 23:00→07:30 睡眠）拆成两段，才能按钟点对齐 0–24h 时间轴
+      out.push(segOf(b, s, 1440))
+      out.push(segOf(b, 0, e))
+    } else {
+      out.push(segOf(b, s, e))
+    }
+  }
+  return out.sort((a, b) => a.startMin - b.startMin)
 }
 
 function toMin(t: string): number {

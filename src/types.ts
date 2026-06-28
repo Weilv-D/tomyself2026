@@ -41,6 +41,8 @@ export interface BlockCheck {
   actualMinutes?: number
   /** 手记备注，用于改进计划 */
   note?: string
+  /** 该块最近一次修改的毫秒时间戳。同步合并时按它做「最后写入优先」。 */
+  updatedAt?: number
 }
 
 /** 某日打卡记录 */
@@ -56,6 +58,8 @@ export interface AppData {
   records: Record<string, DayRecord>
   /** 可编辑的作息计划 */
   schedule: ScheduleBlock[]
+  /** 作息计划最近一次修改的毫秒时间戳。同步时整体取新者，避免逐块混搭。 */
+  scheduleUpdatedAt?: number
   meta: {
     /** 打卡起始日（用于计算期号） */
     startDate: string

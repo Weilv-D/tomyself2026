@@ -1,4 +1,4 @@
-import type { AppData } from '../types'
+import type { AppData, BlockCheck, DayRecord } from '../types'
 import type { GitHubConfig } from './storage'
 
 const API = 'https://api.github.com'
@@ -27,6 +27,16 @@ function headers(cfg: GitHubConfig): HeadersInit {
   }
 }
 
+/** 字符串 → base64（UTF-8 字节流）。Contents API 要求 base64 内容。 */
+function encodeBase64Utf8(s: string): string {
+  return btoa(unescape(encodeURIComponent(s)))
+}
+
+/** base64 → 字符串（UTF-8 字节流解码）。与 encodeBase64Utf8 对称。 */
+function decodeBase64Utf8(b64: string): string {
+  return decodeURIComponent(escape(atob(b64)))
+}
+
 /** 拉取远程文件。404 → 返回 { sha:null, data:null }（远程为空） */
 export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
   const url = `${API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(
@@ -49,7 +59,8 @@ export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
   const sha: string = json.sha
   let data: AppData | null = null
   try {
-    const decoded = atob(json.content.replace(/\n/g, ''))
+    const binary = atob(json.content.replace(/\n/g, ''))
+    const decoded = decodeBase64Utf8(binary)
     data = JSON.parse(decoded) as AppData
   } catch {
     data = null
@@ -72,7 +83,7 @@ export async function pushRemote(
   const body: Record<string, unknown> = {
     message,
     branch: cfg.branch,
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
+    content: encodeBase64Utf8(JSON.stringify(data, null, 2)),
   }
   if (sha) body.sha = sha
 
@@ -103,18 +114,18 @@ export async function pushRemote(
   return json.content?.sha as string
 }
 
-/** 测试连通性：验证 token 对该仓库可读。
- *  返回 { ok, login, message } */
+/** 测试连通性：验证 token 有效、仓库可读，并尽量探测写权限。
+ *  返回 { ok, login, message, canWrite } */
 export async function verifyToken(
   cfg: GitHubConfig,
-): Promise<{ ok: boolean; login?: string; message?: string }> {
+): Promise<{ ok: boolean; login?: string; message?: string; canWrite?: boolean }> {
   // 先校验 token 本身
   const me = await fetch(`${API}/user`, { headers: headers(cfg) })
   if (!me.ok) {
     return { ok: false, message: `Token 无效（HTTP ${me.status}）` }
   }
   const meJson = await me.json()
-  // 再校验仓库可读
+  // 再校验仓库可读，并读取 permissions 判断是否可写
   const repo = await fetch(
     `${API}/repos/${cfg.owner}/${cfg.repo}`,
     { headers: headers(cfg) },
@@ -125,44 +136,68 @@ export async function verifyToken(
   if (!repo.ok) {
     return { ok: false, message: `仓库访问失败（HTTP ${repo.status}）` }
   }
-  return { ok: true, login: meJson.login }
+  const repoJson = await repo.json()
+  // Fine-grained token 的 permissions 不总在 repo 对象里，但若有则据实回报。
+  // 注意：即便 push=true，fine-grained token 仍受其 Contents 权限范围限制，
+  // 真正写权限以首次推送结果为准。
+  const canWrite = !!repoJson.permissions?.push
+  return { ok: true, login: meJson.login, canWrite }
 }
 
-/** 合并两份 AppData：以 base 为主，叠加 remote 的差异。
- *  - records：按 date 合并，同日按 blockId 合并，冲突块保留本地（备注拼接）
- *  - schedule / meta：本地优先 */
-export function mergeData(base: AppData, remote: AppData | null): AppData {
-  if (!remote) return base
-  const merged: AppData = {
-    records: { ...base.records },
-    schedule: base.schedule,
-    meta: base.meta,
+/** 合并两份 AppData：按修改时间戳「最后写入优先」(Last-Write-Wins)。
+ *
+ *  - records：逐日逐块比较 updatedAt，取新者的整条 BlockCheck
+ *    （done / actualMinutes / note 作为原子单元一起跟随时戳）。
+ *    同一真冲突时旧端备注被丢弃。
+ *  - schedule：作为整体单元比较 scheduleUpdatedAt，取新者的整份作息
+ *    （不做逐块混搭，避免时段错乱）；meta 非用户可编辑，跟随同一胜者。
+ *  - 无时间戳（老数据）视为 0（最旧），任何新写入都赢，纯加法、向后兼容。
+ *
+ *  工作流建议：编辑前先拉取远程最新，可进一步缩小时钟偏差导致的冲突。 */
+export function mergeData(local: AppData, remote: AppData | null): AppData {
+  if (!remote) return local
+
+  // ── 作息计划：整体取新者，meta 跟随 ──
+  const localScheduleTs = local.scheduleUpdatedAt ?? 0
+  const remoteScheduleTs = remote.scheduleUpdatedAt ?? 0
+  const scheduleWinnerIsLocal = localScheduleTs >= remoteScheduleTs
+  const schedule = scheduleWinnerIsLocal ? local.schedule : remote.schedule
+  const meta = scheduleWinnerIsLocal ? local.meta : remote.meta
+
+  // ── 打卡记录：逐日逐块 LWW ──
+  const records = mergeRecords(local.records, remote.records)
+
+  return {
+    records,
+    schedule,
+    scheduleUpdatedAt: Math.max(localScheduleTs, remoteScheduleTs),
+    meta,
   }
-  for (const [date, rRec] of Object.entries(remote.records)) {
-    const localDay = merged.records[date]
-    if (!localDay) {
-      merged.records[date] = rRec
+}
+
+/** 取时间戳较新的那条 block；相等时本地优先（保证确定性）。 */
+function newerBlock(local: BlockCheck, remote: BlockCheck): BlockCheck {
+  return (local.updatedAt ?? 0) >= (remote.updatedAt ?? 0) ? local : remote
+}
+
+/** 逐日逐块合并打卡记录。 */
+function mergeRecords(
+  local: Record<string, DayRecord>,
+  remote: Record<string, DayRecord>,
+): Record<string, DayRecord> {
+  const merged: Record<string, DayRecord> = { ...local }
+  for (const [date, rDay] of Object.entries(remote)) {
+    const lDay = merged[date]
+    if (!lDay) {
+      merged[date] = rDay
       continue
     }
-    const mergedBlocks = { ...localDay.blocks }
-    for (const [bid, rBlock] of Object.entries(rRec.blocks)) {
-      const lb = mergedBlocks[bid]
-      if (!lb) {
-        mergedBlocks[bid] = rBlock
-        continue
-      }
-      // 冲突：本地 done 优先；实际时长取较大值；备注拼接
-      const notes = [lb.note, rBlock.note].filter(Boolean)
-      mergedBlocks[bid] = {
-        done: lb.done || rBlock.done,
-        actualMinutes:
-          (lb.actualMinutes ?? 0) >= (rBlock.actualMinutes ?? 0)
-            ? lb.actualMinutes
-            : rBlock.actualMinutes,
-        note: notes.length ? notes.join(' ／ ') : undefined,
-      }
+    const blocks = { ...lDay.blocks }
+    for (const [bid, rBlock] of Object.entries(rDay.blocks)) {
+      const lBlock = blocks[bid]
+      blocks[bid] = lBlock ? newerBlock(lBlock, rBlock) : rBlock
     }
-    merged.records[date] = { date, blocks: mergedBlocks }
+    merged[date] = { date, blocks }
   }
   return merged
 }

@@ -79,7 +79,6 @@ function AppInner() {
             path="/settings"
             element={
               <SettingsPage
-                app={app}
                 cfg={cfg}
                 onCfgChange={setCfg}
                 onPull={sync.pull}

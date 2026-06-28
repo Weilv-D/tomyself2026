@@ -71,7 +71,7 @@ export function useAppData(): AppDataApi {
   }, [])
 
   const setSchedule = useCallback((schedule: ScheduleBlock[]) => {
-    setData((prev) => ({ ...prev, schedule }))
+    setData((prev) => ({ ...prev, schedule, scheduleUpdatedAt: Date.now() }))
     setDirty(true)
   }, [])
 
@@ -89,7 +89,8 @@ export function useAppData(): AppDataApi {
   }
 }
 
-/** 不可变地更新某日某块的打卡状态 */
+/** 不可变地更新某日某块的打卡状态。
+ *  写入时统一打 updatedAt 时间戳，供同步「最后写入优先」合并使用。 */
 function withBlock(
   prev: AppData,
   date: string,
@@ -98,7 +99,7 @@ function withBlock(
 ): AppData {
   const day = prev.records[date] ?? { date, blocks: {} }
   const current: BlockCheck = day.blocks[blockId] ?? { done: false }
-  const nextBlock = fn(current)
+  const nextBlock: BlockCheck = { ...fn(current), updatedAt: Date.now() }
   const nextDay = {
     ...day,
     blocks: { ...day.blocks, [blockId]: nextBlock },

@@ -24,24 +24,25 @@ export function DayTimeline({ segs, data }: DayTimelineProps) {
   return (
     <div className="timeline-wrap">
       <div className="timeline-bar">
-        {segs.map((seg) => {
-          // 跨午夜块（如睡眠 23:00→07:30）拆成两段显示
-          const span = seg.endMin > seg.startMin ? seg.endMin - seg.startMin : seg.endMin + 1440 - seg.startMin
-          const pct = (span / 1440) * 100
-          const isCross = seg.endMin <= seg.startMin
+        {segs.map((seg, i) => {
+          // 按绝对钟点定位：左偏移 = startMin/1440，宽度 = span/1440，
+          // 这样色块与底部 00/06/12/18/24 刻度及红色 now 线对齐。
+          const span = seg.endMin - seg.startMin
+          if (span <= 0) return null
+          const leftPct = (seg.startMin / 1440) * 100
+          const widthPct = (span / 1440) * 100
           return (
             <div
-              key={seg.blockId}
+              key={seg.blockId + '-' + i}
               className={'timeline-seg' + (seg.done ? ' done' : '')}
               style={{
-                width: pct + '%',
+                left: leftPct + '%',
+                width: widthPct + '%',
                 background: seg.done ? weightToColor(seg.weight) : 'var(--paper)',
                 opacity: seg.done ? 1 : 0.5,
               }}
-              title={`${minToTime(seg.startMin)} ${seg.title}${seg.done ? ' · 已完成' : ''}`}
-            >
-              {isCross && <span className="sr-only">跨午夜</span>}
-            </div>
+              title={`${minToTime(seg.startMin)}–${minToTime(seg.endMin)} ${seg.title}${seg.done ? ' · 已完成' : ''}`}
+            />
           )
         })}
         {/* 当前时刻指示线（仅今天有意义，但简单起见始终显示） */}
