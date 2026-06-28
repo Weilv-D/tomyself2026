@@ -47,7 +47,7 @@ export const DEFAULT_SCHEDULE: ScheduleBlock[] = [
     end: '14:00',
     title: '午餐、社交与强效午睡',
     category: 'meal',
-    detail: '控糖进食：先吃蔬菜再吃肉，最后就着菜吃主食。陪奶奶聊天。午睡 30 分钟。',
+    detail: '控糖进食：先吃蔬菜再吃肉，最后就着菜吃主食。午睡 30 分钟。',
   },
   {
     id: 'b-deep-3',
