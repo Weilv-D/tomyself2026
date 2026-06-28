@@ -48,8 +48,12 @@ export function SettingsPage({
           ? { ok: true, text: `验证通过 · 账号 ${r.login}` }
           : { ok: false, text: r.message ?? '验证失败' },
       )
-    } catch {
-      setVerifyMsg({ ok: false, text: '网络错误，无法验证' })
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : String(e)
+      setVerifyMsg({
+        ok: false,
+        text: '连接失败：' + reason + '。常见原因：广告拦截/隐私扩展拦截了请求，或网络受限。',
+      })
     } finally {
       setVerifying(false)
     }
@@ -72,14 +76,14 @@ export function SettingsPage({
       <SectionTitle roman="IV" title="同步配置" sub="The Wire" />
 
       <p className="deck">
-        打卡数据存在仓库的 <code className="mono">data/app.json</code> 里。填好令牌和仓库信息，
-        就能在多台设备间同步。
+        打卡记录存在仓库的 <code className="mono">data/app.json</code> 里。填好令牌和仓库信息，
+        多台设备就能共用一份记录。
       </p>
 
       <div className="warning">
-        <strong>关于安全。</strong> 令牌只存在你这个浏览器里，不会发到别处。
-        但 localStorage 对页面脚本可见，一旦泄露别人就能读写你授权的仓库。所以建议用
-        Fine-grained Token，只给本仓库的 Contents 读写权限，用完可以换。
+        <strong>令牌说明。</strong> 令牌存在本地浏览器，不经过任何第三方。
+        请用 Fine-grained Token，只勾选本仓库的 Contents 读写权限；怀疑泄露时
+        在 GitHub 把它删掉重发即可。
       </div>
 
       <div className="settings-form">

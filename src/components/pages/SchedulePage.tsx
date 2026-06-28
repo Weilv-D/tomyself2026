@@ -93,7 +93,7 @@ export function SchedulePage({ app }: SchedulePageProps) {
       <SectionTitle roman="III" title="作息方略" sub="The Regimen" />
 
       <p className="deck">
-        时间块可在此增删改，也可整体导入。默认这套按生物钟排，不喜欢就换掉。
+        时间块可在这里增删改，也能整体导入。默认计划按生物钟排，不合用就改。
       </p>
 
       <div className="schedule-tools">
