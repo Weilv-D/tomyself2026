@@ -81,14 +81,18 @@ export function DashboardPage({ app }: DashboardPageProps) {
         {/* 科目时长 */}
         <div className="panel">
           <div className="panel-head">
-            科目时长 · 共 {Math.round(totalStudy / 60 * 10) / 10}h
+            <span>科目时长 · 共 {Math.round(totalStudy / 60 * 10) / 10}h</span>
+            <span className="panel-en">By Subject</span>
           </div>
           <SubjectBars stats={subjects} />
         </div>
 
         {/* 连续打卡 + 热力图 */}
         <div className="panel">
-          <div className="panel-head">连续打卡 · 热力图</div>
+          <div className="panel-head">
+            <span>连续打卡 · 热力图</span>
+            <span className="panel-en">Streak & Heatmap</span>
+          </div>
           <StreakHeatmap current={streak} longest={longest} cells={cells} />
         </div>
 
@@ -96,7 +100,8 @@ export function DashboardPage({ app }: DashboardPageProps) {
         <div className="panel panel-full">
           <Divider />
           <div className="panel-head" style={{ marginTop: 'var(--sp-4)' }}>
-            计划完成率 · 实际 vs 计划学习时长
+            <span>计划完成率 · 实际 vs 计划学习时长</span>
+            <span className="panel-en">Planned vs Actual</span>
           </div>
           <CompletionChart points={series} />
         </div>
@@ -105,7 +110,8 @@ export function DashboardPage({ app }: DashboardPageProps) {
         <div className="panel panel-full">
           <Divider />
           <div className="panel-head" style={{ marginTop: 'var(--sp-4)' }}>
-            今日作息时间轴 · 24h
+            <span>今日作息时间轴 · 24h</span>
+            <span className="panel-en">Hours of the Day</span>
           </div>
           <DayTimeline segs={timeline} data={data} />
         </div>

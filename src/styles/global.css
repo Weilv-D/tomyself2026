@@ -203,11 +203,11 @@ body {
 }
 .section-head .sub {
   margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracked);
-  text-transform: uppercase;
-  color: var(--gray-50);
+  font-family: var(--font-display-en);
+  font-style: italic;
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
+  color: var(--gray-70);
 }
 
 /* ── 屏幕阅读器专用 ── */

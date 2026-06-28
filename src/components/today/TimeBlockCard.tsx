@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ScheduleBlock, Weekday, BlockCheck } from '../../types'
-import { CATEGORY_LABEL, STUDY_CATEGORIES } from '../../types'
+import { CATEGORY_LABEL, CATEGORY_LABEL_EN, STUDY_CATEGORIES } from '../../types'
 import { durationMin, fmtDuration } from '../../lib/time'
 
 interface TimeBlockCardProps {
@@ -44,6 +44,7 @@ export function TimeBlockCard({
       <div className="block-body">
         <div className="block-title-row">
           <span className="block-title">{title}</span>
+          <span className="block-cat-en">{CATEGORY_LABEL_EN[block.category]}</span>
           <span className="block-cat">{CATEGORY_LABEL[block.category]}</span>
           {block.subject && <span className="block-cat">{block.subject}</span>}
         </div>

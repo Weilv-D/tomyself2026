@@ -76,6 +76,18 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   other: '其他',
 }
 
+/** 类别英文衬线标签（用于报刊副标） */
+export const CATEGORY_LABEL_EN: Record<Category, string> = {
+  deepwork: 'Deep Work',
+  rest: 'Recess',
+  sleep: 'Slumber',
+  meal: 'Meal',
+  exercise: 'Exercise',
+  review: 'Recall',
+  social: 'Social',
+  other: 'Miscellany',
+}
+
 /** 类别对应的灰阶深度（0-1，越大越深），用于时间轴与图表着色 */
 export const CATEGORY_WEIGHT: Record<Category, number> = {
   deepwork: 1.0,

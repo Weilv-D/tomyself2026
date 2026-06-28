@@ -24,16 +24,19 @@ export function DailyProgress({
           {fmtHours(studiedMinutes)}<small>h</small>
         </div>
         <div className="daily-stat-label">实际学习 · {fmtDuration(studiedMinutes)}</div>
+        <div className="daily-stat-en">Hours Done</div>
       </div>
       <div className="daily-stat">
         <div className="daily-stat-value">
           {fmtHours(plannedMinutes)}<small>h</small>
         </div>
         <div className="daily-stat-label">计划学习 · {fmtDuration(plannedMinutes)}</div>
+        <div className="daily-stat-en">Hours Set</div>
       </div>
       <div className="daily-stat">
         <div className="daily-stat-value">{pct}<small>%</small></div>
         <div className="daily-stat-label">打卡完成率</div>
+        <div className="daily-stat-en">Done Rate</div>
       </div>
 
       <div className="progress-track" title={`学习进度 ${studyPct}%`}>

@@ -23,12 +23,14 @@ export function StreakHeatmap({ current, longest, cells }: StreakHeatmapProps) {
             {current}<span className="big-number-unit">日</span>
           </div>
           <div className="big-number-label">当前连续打卡</div>
+          <div className="big-number-en">Current Streak</div>
         </div>
         <div>
           <div className="big-number" style={{ fontSize: '2.4rem', color: 'var(--gray-70)' }}>
             {longest}
           </div>
           <div className="big-number-label">最长纪录</div>
+          <div className="big-number-en">Longest</div>
         </div>
       </div>
 
@@ -43,13 +45,13 @@ export function StreakHeatmap({ current, longest, cells }: StreakHeatmapProps) {
       </div>
 
       <div className="heat-legend">
-        <span>少</span>
+        <span>少 Less</span>
         <div className="heat-cell" />
         <div className="heat-cell l1" />
         <div className="heat-cell l2" />
         <div className="heat-cell l3" />
         <div className="heat-cell l4" />
-        <span>多</span>
+        <span>More 多</span>
       </div>
     </div>
   )
