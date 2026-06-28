@@ -38,7 +38,23 @@ export function SettingsPage({
     setTimeout(() => setFlash(''), 2000)
   }
 
+  const ready = !!(draft.owner.trim() && draft.repo.trim() && draft.branch.trim() && draft.path.trim() && draft.token.trim())
+
+  const validate = (): string | null => {
+    if (!draft.owner.trim()) return '请填写用户名（Owner），如 Weilv-D'
+    if (!draft.repo.trim()) return '请填写仓库名（Repo），如 tomyself2026'
+    if (!draft.branch.trim()) return '请填写分支名（Branch），如 main'
+    if (!draft.path.trim()) return '请填写文件路径，如 data/app.json'
+    if (!draft.token.trim()) return '请填写令牌（Token）'
+    return null
+  }
+
   const verify = async () => {
+    const missing = validate()
+    if (missing) {
+      setVerifyMsg({ ok: false, text: missing })
+      return
+    }
     setVerifying(true)
     setVerifyMsg(null)
     try {
@@ -67,6 +83,11 @@ export function SettingsPage({
   }
 
   const handle = (fn: () => Promise<SyncResult>) => async () => {
+    const missing = validate()
+    if (missing) {
+      setVerifyMsg({ ok: false, text: missing })
+      return
+    }
     onCfgChange(draft)
     await fn()
   }
@@ -201,7 +222,7 @@ export function SettingsPage({
             type="button"
             className="btn"
             onClick={handle(onPull)}
-            disabled={!draft.token}
+            disabled={!ready}
           >
             拉取
           </button>
@@ -209,7 +230,7 @@ export function SettingsPage({
             type="button"
             className="btn"
             onClick={handle(onPush)}
-            disabled={!draft.token}
+            disabled={!ready}
           >
             推送
           </button>
@@ -217,7 +238,7 @@ export function SettingsPage({
             type="button"
             className="btn btn--solid"
             onClick={handle(onSync)}
-            disabled={!draft.token}
+            disabled={!ready}
           >
             同步
           </button>
