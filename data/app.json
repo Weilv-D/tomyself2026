@@ -49,7 +49,7 @@
       "end": "15:30",
       "title": "深度工作 III —— 语言与阅读",
       "category": "deepwork",
-      "subject": "英语/",
+      "subject": "英语/政治",
       "detail": "交替学习。切换为英语阅读或专业课泛读。重点是画出思维导图框架。"
     },
     {
@@ -137,5 +137,5 @@
     "startDate": "2026-06-28",
     "examDate": "2026-12-19"
   },
-  "scheduleUpdatedAt": 1782691458934
+  "scheduleUpdatedAt": 1782691460815
 }
