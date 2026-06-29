@@ -28,8 +28,7 @@ function headers(cfg: GitHubConfig): HeadersInit {
 }
 
 /** 字符串 → base64（UTF-8 字节流）。Contents API 要求 base64 内容。
- *  用 TextEncoder 编码 UTF-8 字节，再逐字节拼成二进制串交给 btoa，
- *  避开已废弃且对中文不可靠的 escape/unescape。 */
+ *  TextEncoder 编码为 UTF-8 字节后逐字节拼成二进制串，再交给 btoa。 */
 function encodeBase64Utf8(s: string): string {
   const bytes = new TextEncoder().encode(s)
   let binary = ''
@@ -45,12 +44,10 @@ function decodeBase64Utf8(b64: string): string {
   return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
 }
 
-/** 拉取远程文件。
- *  - 404 → 返回 { sha:null, data:null }（远程确无此文件）。
- *  - 文件存在但内容解析失败 → 抛错（而非当成"远程为空"，避免把数据损坏伪装成空仓库，
- *    让 sync 误以为需新建而覆盖远程）。
- *  - fetch 显式禁用缓存：GitHub 对 404 不下发 Cache-Control，浏览器可能启发式缓存早期
- *    的 404/200，导致"远程已有文件却仍报空"或状态滞后，故每次都发真实请求。 */
+/** 拉取远程文件。所有请求禁用缓存，保证每次拿到最新内容与 SHA。
+ *  - 文件不存在（404）→ { sha:null, data:null }。
+ *  - 文件存在 → 解析为 AppData；解析失败抛 GitHubError，携带原始错误信息。
+ *    （不把解析失败当成空仓库，否则会被随后的推送当作新建而覆盖远程真实数据。） */
 export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
   const url = `${API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(
     cfg.path,
@@ -71,11 +68,9 @@ export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
   const json = await res.json()
   const sha: string = json.sha
   if (!json.content) {
-    // 文件存在但没有 content（如目录或 1MB+ 大文件）：无法同步，明确报错
+    // 文件存在但无 content（目录或超过 1MB 的大文件），Contents API 不返回内联内容
     throw new GitHubError('远程文件无 content（可能是目录或过大）', res.status)
   }
-  // 解析失败必须抛错，不能吞掉当空——否则远程真有数据却被误判为空、被推送覆盖。
-  // 包成 GitHubError 以便 UI 显示具体原因，而非笼统的"同步失败"。
   try {
     const decoded = decodeBase64Utf8(atob(json.content.replace(/\n/g, '')))
     return { sha, data: JSON.parse(decoded) as AppData }
@@ -114,8 +109,7 @@ export async function pushRemote(
   })
 
   if (res.status === 409 || res.status === 422) {
-    // sha 不匹配（远程已被另一端更新）或新建时文件已存在。
-    // 指引用户「先拉取」以拿到最新 sha；若刚拉取过仍冲突，多为时钟/并发，重试同步即可。
+    // SHA 不匹配（远程已变更）或新建时文件已存在。先拉取刷新 SHA，再同步
     throw new GitHubError('远程已更新，本地 SHA 过期，请先「拉取」再同步', res.status)
   }
   if (res.status === 401 || res.status === 403) {

@@ -8,8 +8,8 @@ export function dayParity(iso: string): 'odd' | 'even' {
   return day % 2 === 1 ? 'odd' : 'even'
 }
 
-/** 解析某块在某日的有效展示：依次取 dateParityVariant → weekdayVariant → 基础值。
- *  优先级原因：单双号交替决定科目，比「星期变体」（仅运动等标题/细节）更具体。 */
+/** 解析某块在某日的有效展示：单双号变体优先于星期变体，二者均缺省时回退到基础块。
+ *  变体可覆盖标题 / 科目 / 细节中任意字段。 */
 export interface ResolvedBlock {
   title: string
   subject?: string
@@ -21,7 +21,6 @@ export function resolveBlock(block: ScheduleBlock, iso: string): ResolvedBlock {
   const byWeekday = block.weekdayVariant
     ? block.weekdayVariant[new Date(iso + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6]
     : undefined
-  // 单双号优先于星期变体；任一变体都可覆盖标题/科目/细节，缺省回退到基础块
   const variant = parity ?? byWeekday
   return {
     title: variant?.title ?? block.title,

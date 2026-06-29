@@ -173,7 +173,7 @@ export const DEFAULT_SCHEDULE: ScheduleBlock[] = [
     end: '21:00',
     title: '理科 · 终极提取',
     category: 'review',
-    // 不设 subject：同时默写数学公式与控制理论方框图 / 传递函数，时长计入「其他」，避免单科统计偏差。
+    // 不设科目：同时默写数学公式与控制理论方框图，跨两科，时长计入「其他」
     detail: '白纸默写全天数学公式和控制理论方框图 / 传递函数，不看书本。',
   },
   {
