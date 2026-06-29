@@ -37,13 +37,18 @@ function decodeBase64Utf8(b64: string): string {
   return decodeURIComponent(escape(atob(b64)))
 }
 
-/** 拉取远程文件。404 → 返回 { sha:null, data:null }（远程为空） */
+/** 拉取远程文件。
+ *  - 404 → 返回 { sha:null, data:null }（远程确无此文件）。
+ *  - 文件存在但内容解析失败 → 抛错（而非当成"远程为空"，避免把数据损坏伪装成空仓库，
+ *    让 sync 误以为需新建而覆盖远程）。
+ *  - fetch 显式禁用缓存：GitHub 对 404 不下发 Cache-Control，浏览器可能启发式缓存早期
+ *    的 404/200，导致"远程已有文件却仍报空"或状态滞后，故每次都发真实请求。 */
 export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
   const url = `${API}/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(
     cfg.path,
   )}?ref=${encodeURIComponent(cfg.branch)}`
 
-  const res = await fetch(url, { headers: headers(cfg) })
+  const res = await fetch(url, { headers: headers(cfg), cache: 'no-store' })
 
   if (res.status === 404) {
     return { sha: null, data: null }
@@ -57,14 +62,13 @@ export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
 
   const json = await res.json()
   const sha: string = json.sha
-  let data: AppData | null = null
-  try {
-    const binary = atob(json.content.replace(/\n/g, ''))
-    const decoded = decodeBase64Utf8(binary)
-    data = JSON.parse(decoded) as AppData
-  } catch {
-    data = null
+  if (!json.content) {
+    // 文件存在但没有 content（如目录或 1MB+ 大文件）：无法同步，明确报错
+    throw new GitHubError('远程文件无 content（可能是目录或过大）', res.status)
   }
+  // 解析失败必须抛错，不能吞掉当空——否则远程真有数据却被误判为空、被推送覆盖
+  const decoded = decodeBase64Utf8(atob(json.content.replace(/\n/g, '')))
+  const data = JSON.parse(decoded) as AppData
   return { sha, data }
 }
 
@@ -91,10 +95,13 @@ export async function pushRemote(
     method: 'PUT',
     headers: headers(cfg),
     body: JSON.stringify(body),
+    cache: 'no-store',
   })
 
   if (res.status === 409 || res.status === 422) {
-    throw new GitHubError('远程已更新，存在冲突，请先拉取', res.status)
+    // sha 不匹配（远程已被另一端更新）或新建时文件已存在。
+    // 指引用户「先拉取」以拿到最新 sha；若刚拉取过仍冲突，多为时钟/并发，重试同步即可。
+    throw new GitHubError('远程已更新，本地 SHA 过期，请先「拉取」再同步', res.status)
   }
   if (res.status === 401 || res.status === 403) {
     throw new GitHubError('Token 无写入权限', res.status)
@@ -120,7 +127,7 @@ export async function verifyToken(
   cfg: GitHubConfig,
 ): Promise<{ ok: boolean; login?: string; message?: string; canWrite?: boolean }> {
   // 先校验 token 本身
-  const me = await fetch(`${API}/user`, { headers: headers(cfg) })
+  const me = await fetch(`${API}/user`, { headers: headers(cfg), cache: 'no-store' })
   if (!me.ok) {
     return { ok: false, message: `Token 无效（HTTP ${me.status}）` }
   }
@@ -128,7 +135,7 @@ export async function verifyToken(
   // 再校验仓库可读，并读取 permissions 判断是否可写
   const repo = await fetch(
     `${API}/repos/${cfg.owner}/${cfg.repo}`,
-    { headers: headers(cfg) },
+    { headers: headers(cfg), cache: 'no-store' },
   )
   if (repo.status === 404) {
     return { ok: false, message: '仓库不存在或 token 无权访问' }

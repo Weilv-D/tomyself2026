@@ -42,7 +42,8 @@ export function useGitHubSync(
           const remote = await pullRemote(cfg)
           shaRef.current = remote.sha
           if (!remote.data) {
-            const r = { ok: true, message: '远程为空，已记录 SHA', status: 'synced' as SyncStatus }
+            // 仅真 404（文件不存在）会到这里；解析失败已在 pullRemote 抛错
+            const r = { ok: true, message: '远程尚无数据，已记录 SHA；点「推送」可创建', status: 'synced' as SyncStatus }
             setStatus('synced')
             setMessage(r.message)
             return r
