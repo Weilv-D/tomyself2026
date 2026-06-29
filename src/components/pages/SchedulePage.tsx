@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { AppDataApi } from '../../hooks/useAppData'
 import type { ScheduleBlock, Category } from '../../types'
-import { CATEGORY_LABEL } from '../../types'
+import { CATEGORY_LABEL, SUBJECTS, SUBJECT_OTHER } from '../../types'
 import { SectionTitle } from '../ui/SectionTitle'
 import { Divider } from '../ui/Divider'
 import { DEFAULT_SCHEDULE } from '../../data/defaultSchedule'
@@ -149,6 +149,7 @@ export function SchedulePage({ app }: SchedulePageProps) {
               type="text"
               className="field"
               placeholder="科目（学习类填）"
+              list="subject-options"
               value={b.subject ?? ''}
               onChange={(e) => update(b.id, { subject: e.target.value || undefined })}
             />
@@ -160,6 +161,13 @@ export function SchedulePage({ app }: SchedulePageProps) {
           </div>
         ))}
       </div>
+
+      {/* 科目候选项：四科 + 其他，datalist 既能选也能自由输入 */}
+      <datalist id="subject-options">
+        {[...SUBJECTS, SUBJECT_OTHER].map((s) => (
+          <option key={s} value={s} />
+        ))}
+      </datalist>
 
       <Divider />
 
@@ -217,5 +225,6 @@ function validateBlock(raw: any): ScheduleBlock {
     subject: raw.subject ? String(raw.subject) : undefined,
     detail: raw.detail ? String(raw.detail) : undefined,
     weekdayVariant: raw.weekdayVariant,
+    dateParityVariant: raw.dateParityVariant,
   }
 }

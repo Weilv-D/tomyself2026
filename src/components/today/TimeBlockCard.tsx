@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import type { ScheduleBlock, Weekday, BlockCheck } from '../../types'
+import type { ScheduleBlock, BlockCheck } from '../../types'
 import { CATEGORY_LABEL, CATEGORY_LABEL_EN, STUDY_CATEGORIES } from '../../types'
 import { durationMin, fmtDuration } from '../../lib/time'
+import { resolveBlock } from '../../lib/stats'
 
 interface TimeBlockCardProps {
   block: ScheduleBlock
-  weekday: Weekday
+  /** 当前查看的 ISO 日期，用于按单双号/星期解析变体 */
+  date: string
   check: BlockCheck
   isNow: boolean
   onToggle: () => void
@@ -15,7 +17,7 @@ interface TimeBlockCardProps {
 
 export function TimeBlockCard({
   block,
-  weekday,
+  date,
   check,
   isNow,
   onToggle,
@@ -23,10 +25,9 @@ export function TimeBlockCard({
   onNote,
 }: TimeBlockCardProps) {
   const [noteOpen, setNoteOpen] = useState(false)
-  // 应用星期变体（运动块等）
-  const variant = block.weekdayVariant?.[weekday]
-  const title = variant?.title ?? block.title
-  const detail = variant?.detail ?? block.detail ?? ''
+  // 按当日解析变体（单双号 > 星期 > 基础）
+  const resolved = resolveBlock(block, date)
+  const { title, subject, detail } = resolved
   const isStudy = STUDY_CATEGORIES.includes(block.category)
 
   return (
@@ -46,7 +47,7 @@ export function TimeBlockCard({
           <span className="block-title">{title}</span>
           <span className="block-cat-en">{CATEGORY_LABEL_EN[block.category]}</span>
           <span className="block-cat">{CATEGORY_LABEL[block.category]}</span>
-          {block.subject && <span className="block-cat">{block.subject}</span>}
+          {subject && <span className="block-cat">{subject}</span>}
         </div>
         {detail && <p className="block-detail">{detail}</p>}
 

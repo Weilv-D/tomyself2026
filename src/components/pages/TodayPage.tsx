@@ -107,7 +107,7 @@ export function TodayPage({ app }: TodayPageProps) {
           <TimeBlockCard
             key={block.id}
             block={block}
-            weekday={weekday}
+            date={date}
             check={getBlockCheck(data.records[date] ?? null, block.id)}
             isNow={block.id === nowId}
             onToggle={() => app.toggleBlock(date, block.id)}

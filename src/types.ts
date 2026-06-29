@@ -19,6 +19,21 @@ export type Category =
 /** 是否计入"学习"统计 */
 export const STUDY_CATEGORIES: Category[] = ['deepwork', 'review']
 
+/** 科目（学习类时间块的归属，用于科目时长统计） */
+export const SUBJECTS = ['数学', '控制', '英语', '政治'] as const
+export type Subject = (typeof SUBJECTS)[number]
+
+/** 「其他/未归类」科目：未设 subject 的学习类块计入此项 */
+export const SUBJECT_OTHER = '其他'
+
+/** 时间块变体：按星期或单双号覆盖基础块的标题/科目/细节 */
+export interface BlockVariant {
+  title?: string
+  /** 覆盖科目（用于单双号交替切换「数学/控制」） */
+  subject?: string
+  detail?: string
+}
+
 /** 时间块（日程项） */
 export interface ScheduleBlock {
   id: string
@@ -26,12 +41,19 @@ export interface ScheduleBlock {
   end: string // "08:00"
   title: string
   category: Category
-  /** 数学/英语/专业课 等，仅学习类需要，用于科目统计 */
+  /** 数学/控制/英语/政治，仅学习类需要，用于科目统计 */
   subject?: string
   /** 脑科学执行细节 */
   detail?: string
-  /** 按星期变化的标题（如运动块：一三五与二四不同） */
-  weekdayVariant?: Partial<Record<Weekday, { title?: string; detail?: string }>>
+  /** 按星期变化的覆盖（如运动块：一三五与二四不同） */
+  weekdayVariant?: Partial<Record<Weekday, BlockVariant>>
+  /** 按日期单双号变化的覆盖（如 14:00 数学/控制交替） */
+  dateParityVariant?: {
+    /** 奇数日 */
+    odd?: BlockVariant
+    /** 偶数日 */
+    even?: BlockVariant
+  }
 }
 
 /** 单个时间块的打卡状态 */

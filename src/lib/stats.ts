@@ -2,6 +2,34 @@ import type { AppData, DayRecord, ScheduleBlock, BlockCheck, Category } from '..
 import { STUDY_CATEGORIES, CATEGORY_LABEL, CATEGORY_WEIGHT } from '../types'
 import { durationMin, shiftISO, todayISO } from './time'
 
+/** 该 ISO 日期属单日还是双日（取日期数字的奇偶） */
+export function dayParity(iso: string): 'odd' | 'even' {
+  const day = Number(iso.slice(-2))
+  return day % 2 === 1 ? 'odd' : 'even'
+}
+
+/** 解析某块在某日的有效展示：依次取 dateParityVariant → weekdayVariant → 基础值。
+ *  优先级原因：单双号交替决定科目，比「星期变体」（仅运动等标题/细节）更具体。 */
+export interface ResolvedBlock {
+  title: string
+  subject?: string
+  detail?: string
+}
+
+export function resolveBlock(block: ScheduleBlock, iso: string): ResolvedBlock {
+  const parity = block.dateParityVariant?.[dayParity(iso)]
+  const byWeekday = block.weekdayVariant
+    ? block.weekdayVariant[new Date(iso + 'T00:00:00').getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6]
+    : undefined
+  // 单双号优先于星期变体；任一变体都可覆盖标题/科目/细节，缺省回退到基础块
+  const variant = parity ?? byWeekday
+  return {
+    title: variant?.title ?? block.title,
+    subject: variant?.subject ?? block.subject,
+    detail: variant?.detail ?? block.detail ?? '',
+  }
+}
+
 /** 获取某日记录（无则空） */
 export function getDayRecord(data: AppData, date: string): DayRecord | null {
   return data.records[date] ?? null
@@ -104,7 +132,8 @@ export function subjectMinutes(
     if (!rec) continue
     for (const block of data.schedule) {
       if (!STUDY_CATEGORIES.includes(block.category)) continue
-      const subj = block.subject ?? '其他'
+      // 取当日解析出的科目（单双号交替时数学/控制各算各的）
+      const subj = resolveBlock(block, date).subject ?? '其他'
       const mins = rec.blocks[block.id]?.actualMinutes ?? 0
       if (mins > 0) map.set(subj, (map.get(subj) ?? 0) + mins)
     }
@@ -223,9 +252,9 @@ export interface TimelineSeg {
 export function dayTimeline(data: AppData, date: string): TimelineSeg[] {
   const rec = getDayRecord(data, date)
   const done = (b: ScheduleBlock) => !!rec?.blocks[b.id]?.done
-  const segOf = (b: ScheduleBlock, s: number, e: number): TimelineSeg => ({
+  const segOf = (b: ScheduleBlock, title: string, s: number, e: number): TimelineSeg => ({
     blockId: b.id,
-    title: b.title,
+    title,
     category: b.category,
     startMin: s,
     endMin: e,
@@ -234,14 +263,15 @@ export function dayTimeline(data: AppData, date: string): TimelineSeg[] {
   })
   const out: TimelineSeg[] = []
   for (const b of data.schedule) {
+    const resolved = resolveBlock(b, date)
     let s = toMin(b.start)
     let e = toMin(b.end)
     if (e <= s) {
       // 跨午夜块（如 23:00→07:30 睡眠）拆成两段，才能按钟点对齐 0–24h 时间轴
-      out.push(segOf(b, s, 1440))
-      out.push(segOf(b, 0, e))
+      out.push(segOf(b, resolved.title, s, 1440))
+      out.push(segOf(b, resolved.title, 0, e))
     } else {
-      out.push(segOf(b, s, e))
+      out.push(segOf(b, resolved.title, s, e))
     }
   }
   return out.sort((a, b) => a.startMin - b.startMin)
