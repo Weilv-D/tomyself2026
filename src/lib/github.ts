@@ -27,14 +27,22 @@ function headers(cfg: GitHubConfig): HeadersInit {
   }
 }
 
-/** 字符串 → base64（UTF-8 字节流）。Contents API 要求 base64 内容。 */
+/** 字符串 → base64（UTF-8 字节流）。Contents API 要求 base64 内容。
+ *  用 TextEncoder 编码 UTF-8 字节，再逐字节拼成二进制串交给 btoa，
+ *  避开已废弃且对中文不可靠的 escape/unescape。 */
 function encodeBase64Utf8(s: string): string {
-  return btoa(unescape(encodeURIComponent(s)))
+  const bytes = new TextEncoder().encode(s)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
 }
 
 /** base64 → 字符串（UTF-8 字节流解码）。与 encodeBase64Utf8 对称。 */
 function decodeBase64Utf8(b64: string): string {
-  return decodeURIComponent(escape(atob(b64)))
+  const binary = atob(b64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
 }
 
 /** 拉取远程文件。
@@ -66,10 +74,17 @@ export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
     // 文件存在但没有 content（如目录或 1MB+ 大文件）：无法同步，明确报错
     throw new GitHubError('远程文件无 content（可能是目录或过大）', res.status)
   }
-  // 解析失败必须抛错，不能吞掉当空——否则远程真有数据却被误判为空、被推送覆盖
-  const decoded = decodeBase64Utf8(atob(json.content.replace(/\n/g, '')))
-  const data = JSON.parse(decoded) as AppData
-  return { sha, data }
+  // 解析失败必须抛错，不能吞掉当空——否则远程真有数据却被误判为空、被推送覆盖。
+  // 包成 GitHubError 以便 UI 显示具体原因，而非笼统的"同步失败"。
+  try {
+    const decoded = decodeBase64Utf8(atob(json.content.replace(/\n/g, '')))
+    return { sha, data: JSON.parse(decoded) as AppData }
+  } catch (e) {
+    throw new GitHubError(
+      `远程数据解析失败：${e instanceof Error ? e.message : String(e)}`,
+      res.status,
+    )
+  }
 }
 
 /** 推送本地数据到远程。

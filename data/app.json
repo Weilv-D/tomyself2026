@@ -1,17 +1,5 @@
 {
-  "records": {
-    "2026-06-28": {
-      "date": "2026-06-28",
-      "blocks": {
-        "b-break": {
-          "done": false
-        },
-        "b-deep-4": {
-          "done": false
-        }
-      }
-    }
-  },
+  "records": {},
   "schedule": [
     {
       "id": "b-wake",
@@ -191,6 +179,6 @@
   ],
   "meta": {
     "startDate": "2026-06-28",
-    "examDate": "2026-12-26"
+    "examDate": "2026-12-19"
   }
 }
