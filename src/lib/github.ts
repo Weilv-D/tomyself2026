@@ -72,7 +72,7 @@ export async function pullRemote(cfg: GitHubConfig): Promise<RemoteFile> {
     throw new GitHubError('远程文件无 content（可能是目录或过大）', res.status)
   }
   try {
-    const decoded = decodeBase64Utf8(atob(json.content.replace(/\n/g, '')))
+    const decoded = decodeBase64Utf8(json.content.replace(/\n/g, ''))
     return { sha, data: JSON.parse(decoded) as AppData }
   } catch (e) {
     throw new GitHubError(
