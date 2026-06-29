@@ -10,6 +10,15 @@
           "done": false
         }
       }
+    },
+    "2026-06-29": {
+      "date": "2026-06-29",
+      "blocks": {
+        "b-wake": {
+          "done": true,
+          "updatedAt": 1782696282639
+        }
+      }
     }
   },
   "schedule": [
