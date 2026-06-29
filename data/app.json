@@ -1,5 +1,17 @@
 {
-  "records": {},
+  "records": {
+    "2026-06-28": {
+      "date": "2026-06-28",
+      "blocks": {
+        "b-break": {
+          "done": false
+        },
+        "b-deep-4": {
+          "done": false
+        }
+      }
+    }
+  },
   "schedule": [
     {
       "id": "b-wake",
@@ -177,8 +189,9 @@
       "detail": "海马体回放日间记忆，转化为长期记忆；肌肉进行超量恢复。"
     }
   ],
+  "scheduleUpdatedAt": 0,
   "meta": {
     "startDate": "2026-06-28",
-    "examDate": "2026-12-19"
+    "examDate": "2026-12-26"
   }
 }
