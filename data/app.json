@@ -32,7 +32,7 @@
       "end": "11:30",
       "title": "深度工作 II —— 逻辑与计算",
       "category": "deepwork",
-      "subject": "数学",
+      "subject": "数学/",
       "detail": "继续上午核心科目。执行蔡加尼克效应：时间一到，无论是否做完立刻停笔。"
     },
     {
@@ -137,5 +137,5 @@
     "startDate": "2026-06-28",
     "examDate": "2026-12-19"
   },
-  "scheduleUpdatedAt": 1782691436867
+  "scheduleUpdatedAt": 1782691446238
 }
