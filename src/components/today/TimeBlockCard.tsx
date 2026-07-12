@@ -53,13 +53,13 @@ export function TimeBlockCard({
 
         {isStudy && (
           <div style={{ marginTop: 'var(--sp-3)', display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
-            <span className="minutes-label">实际时长 / m</span>
+            <span className="minutes-label">实际时长 / 分钟</span>
             <input
               type="number"
               min={0}
               max={600}
               className="minutes-input"
-              value={check.actualMinutes ?? ''}
+              value={check.actualMinutes ? String(check.actualMinutes) : ''}
               placeholder="0"
               onChange={(e) => onMinutes(Number(e.target.value) || 0)}
             />

@@ -49,7 +49,7 @@ export function DashboardPage({ app }: DashboardPageProps) {
       <SectionTitle roman="II" title="数据档案" sub="The Ledger" />
 
       <p className="deck">
-        每天的时间花在哪，看图最直观。
+        看看时间都花在了哪里。
       </p>
 
       {/* 周期切换 */}

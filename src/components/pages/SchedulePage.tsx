@@ -5,6 +5,7 @@ import { CATEGORY_LABEL, SUBJECTS, SUBJECT_OTHER } from '../../types'
 import { SectionTitle } from '../ui/SectionTitle'
 import { Divider } from '../ui/Divider'
 import { DEFAULT_SCHEDULE } from '../../data/defaultSchedule'
+import { timeToMin } from '../../lib/time'
 
 interface SchedulePageProps {
   app: AppDataApi
@@ -50,8 +51,18 @@ export function SchedulePage({ app }: SchedulePageProps) {
     app.setSchedule(arr)
   }
 
-  const sortedView = useMemo(
-    () => [...schedule].map((b, i) => ({ b, i })),
+  // 编辑视图按开始时间排序，与今日课表的展示顺序一致。
+  // ↑↓ 调整的是数组顺序，但展示时仍按 start 排序，避免顺序与钟点错乱。
+  const editView = useMemo(
+    () => [...schedule].sort((a, b) => {
+      const as = timeToMin(a.start)
+      const bs = timeToMin(b.start)
+      // 跨午夜块（end ≤ start）排到末尾
+      const aOver = timeToMin(a.end) <= as
+      const bOver = timeToMin(b.end) <= bs
+      if (aOver !== bOver) return aOver ? 1 : -1
+      return as - bs
+    }),
     [schedule],
   )
 
@@ -93,7 +104,7 @@ export function SchedulePage({ app }: SchedulePageProps) {
       <SectionTitle roman="III" title="作息方略" sub="The Regimen" />
 
       <p className="deck">
-        时间块可在这里增删改，也能整体导入。默认计划按生物钟排，不合用就改。
+        增删改时间块，或整体导入一份作息计划。
       </p>
 
       <div className="schedule-tools">
@@ -116,7 +127,7 @@ export function SchedulePage({ app }: SchedulePageProps) {
       {msg && <div className={'alert ' + (msg.ok ? 'ok' : 'err')}>{msg.text}</div>}
 
       <div className="block-list">
-        {sortedView.map(({ b }) => (
+        {editView.map((b) => (
           <div className="schedule-edit-row" key={b.id}>
             <input
               type="time"
@@ -174,16 +185,12 @@ export function SchedulePage({ app }: SchedulePageProps) {
       <div className="import-area">
         <div className="panel-head" style={{ marginTop: 'var(--sp-4)' }}>导入作息计划</div>
         <p className="import-help">
-          粘贴 JSON（时间块数组，或含 schedule 字段的对象）。每个块需含 id / start / end / title / category 五项；
-          学习类可加 subject，可选 detail。例如：
-          <code className="mono" style={{ display: 'block', marginTop: 8, fontSize: 'var(--fs-xs)' }}>
-            {`[{"id":"x","start":"08:00","end":"09:30","title":"深度工作","category":"deepwork","subject":"数学"}]`}
-          </code>
+          粘贴时间块数组（或含 schedule 字段的对象），将覆盖当前计划。每项需含 id、start、end、title、category。
         </p>
         <textarea
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
-          placeholder='粘贴 JSON …'
+          placeholder={'[{"id":"x","start":"08:00","end":"09:30","title":"深度工作","category":"deepwork","subject":"数学"}]'}
         />
         <div className="import-actions">
           <button

@@ -102,14 +102,11 @@ export function SettingsPage({
       <SectionTitle roman="IV" title="同步配置" sub="The Wire" />
 
       <p className="deck">
-        打卡记录存在仓库的 <code className="mono">data/app.json</code> 里。填好令牌和仓库信息，
-        多台设备就能共用一份记录。
+        填好仓库信息和令牌，多台设备即可共用一份打卡记录。
       </p>
 
       <div className="warning">
-        <strong>令牌说明。</strong> 令牌存在本地浏览器，不经过任何第三方。
-        请用 Fine-grained Token，只勾选本仓库的 Contents 读写权限；怀疑泄露时
-        在 GitHub 把它删掉重发即可。
+        <strong>令牌说明。</strong> 令牌仅存本地浏览器。建议用 Fine-grained Token，只勾选本仓库 Contents 读写权限；怀疑泄露时在 GitHub 删除重发即可。
       </div>
 
       <div className="settings-form">

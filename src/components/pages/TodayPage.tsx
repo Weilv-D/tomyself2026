@@ -58,8 +58,23 @@ export function TodayPage({ app }: TodayPageProps) {
         new Date(start + 'T00:00:00').getTime()) /
         86400000,
     )
-    return diff + 1
+    return Math.max(1, diff + 1)
   }, [date, data.meta.startDate])
+
+  // 按开始时间排序展示：编辑过 start 后仍按钟点顺序排列（与作息页编辑视图一致）
+  const ordered = useMemo(
+    () =>
+      [...data.schedule].sort((a, b) => {
+        const as = timeToMin(a.start)
+        const bs = timeToMin(b.start)
+        // 跨午夜块（end ≤ start，如 23:00→07:00 睡眠）排到末尾
+        const aOver = timeToMin(a.end) <= as
+        const bOver = timeToMin(b.end) <= bs
+        if (aOver !== bOver) return aOver ? 1 : -1
+        return as - bs
+      }),
+    [data.schedule],
+  )
 
   return (
     <section>
@@ -103,7 +118,7 @@ export function TodayPage({ app }: TodayPageProps) {
 
       {/* 时间块列表 */}
       <div className="block-list">
-        {data.schedule.map((block) => (
+        {ordered.map((block) => (
           <TimeBlockCard
             key={block.id}
             block={block}
