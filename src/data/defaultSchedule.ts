@@ -198,4 +198,6 @@ export const DEFAULT_META = {
   startDate: '2026-06-28',
   // 2027 考研初试：2026 年 12 月 19-20 日，取首日
   examDate: '2026-12-19',
+  // 报头刊名，可编辑
+  title: '考研日课',
 }

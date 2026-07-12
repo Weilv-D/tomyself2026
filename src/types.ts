@@ -87,6 +87,8 @@ export interface AppData {
     startDate: string
     /** 考研日期（可选，用于倒计时） */
     examDate?: string
+    /** 报头刊名（可选，默认「考研日课」） */
+    title?: string
   }
 }
 

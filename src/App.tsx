@@ -62,6 +62,8 @@ function AppInner() {
       <Masthead
         startDate={app.data.meta.startDate}
         examDate={app.data.meta.examDate}
+        title={app.data.meta.title ?? '考研日课'}
+        onTitleChange={(v) => app.setMeta({ title: v })}
       />
 
       <Nav
@@ -93,7 +95,7 @@ function AppInner() {
       </main>
 
       <footer className="footer">
-        考研日课 · {new Date().getFullYear()}
+        {app.data.meta.title ?? '考研日课'} · {new Date().getFullYear()}
       </footer>
     </div>
   )

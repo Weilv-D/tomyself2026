@@ -14,6 +14,8 @@ export interface AppDataApi {
   replaceData: (next: AppData) => void
   /** 替换作息计划 */
   setSchedule: (schedule: ScheduleBlock[]) => void
+  /** 更新 meta（如刊名、考研日期），同步走 schedule 时间戳 */
+  setMeta: (patch: Partial<AppData['meta']>) => void
   /** 是否已修改但未同步（本地 vs 上次加载） */
   dirty: boolean
   markSynced: () => void
@@ -75,6 +77,17 @@ export function useAppData(): AppDataApi {
     setDirty(true)
   }, [])
 
+  // meta 随 schedule 走「最后写入优先」合并（见 mergeData），
+  // 因此改 meta 须同步刷新 scheduleUpdatedAt，否则旧远程会覆盖本地。
+  const setMeta = useCallback((patch: Partial<AppData['meta']>) => {
+    setData((prev) => ({
+      ...prev,
+      meta: { ...prev.meta, ...patch },
+      scheduleUpdatedAt: Date.now(),
+    }))
+    setDirty(true)
+  }, [])
+
   const markSynced = useCallback(() => setDirty(false), [])
 
   return {
@@ -84,6 +97,7 @@ export function useAppData(): AppDataApi {
     setBlockNote,
     replaceData,
     setSchedule,
+    setMeta,
     dirty,
     markSynced,
   }

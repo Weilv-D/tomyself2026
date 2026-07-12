@@ -26,10 +26,43 @@
   font-weight: 900;
   font-size: var(--fs-mega);
   text-align: center;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   line-height: 1;
   padding: var(--sp-5) 0 var(--sp-2);
   margin: 0;
+}
+/* 可编辑刊名：点击进入编辑态 */
+.masthead-title--editable {
+  cursor: text;
+  border-radius: 2px;
+  outline: none;
+  transition: background 0.15s ease;
+}
+.masthead-title--editable:hover,
+.masthead-title--editable:focus {
+  background: rgba(0, 0, 0, 0.04);
+}
+.masthead-title--editable:focus {
+  box-shadow: 0 2px 0 var(--vermilion);
+}
+/* 编辑态输入框：与刊名同字体同字号，居中 */
+.masthead-title-input {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display-cn);
+  font-weight: 900;
+  font-size: var(--fs-mega);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: var(--sp-5) 0 var(--sp-2);
+  margin: 0;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-bottom: 2px solid var(--vermilion);
+  outline: none;
+  border-radius: 2px;
 }
 .masthead-subtitle {
   text-align: center;
@@ -58,6 +91,9 @@
 
 @media (max-width: 640px) {
   .masthead-title {
+    font-size: 2.6rem;
+  }
+  .masthead-title-input {
     font-size: 2.6rem;
   }
   .masthead-subtitle {
